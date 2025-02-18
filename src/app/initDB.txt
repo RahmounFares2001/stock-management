@@ -1,0 +1,60 @@
+import { connect } from "@/dbConfig/dbConfig";
+import { Department, DepartmentInventory, Report, StockItem, User } from "@/models/schema.js";
+
+import bcryptjs from "bcryptjs";
+
+
+const initializeDatabase = async () => {
+    try {
+        // Connect to the database
+        await connect();
+
+        // Insert at least one document per collection to create tables
+         // Hash password and create department user
+        const salt = await bcryptjs.genSalt(10);
+        const hashedPassword = await bcryptjs.hash("fares", salt);
+        const user = await User.create({
+            email: "faresrahm40@gmail.com",
+            password: hashedPassword,
+            role: "admin",
+        });
+
+        // const department = await Department.create({
+        //     name: "Default Department"
+        // });
+
+        // const stockItem = await StockItem.create({
+        //     name: "Laptop",
+        //     description: "Dell XPS 15",
+        //     category: "Electronics",
+        //     quantity: 10,
+        //     status: "available"
+        // });
+
+        // await DepartmentInventory.create({
+        //     departmentId: department._id,
+        //     itemId: stockItem._id,
+        //     quantity: 2,
+        //     status: "active"
+        // });
+
+        // await Report.create({
+        //     departmentId: department._id,
+        //     itemId: stockItem._id,
+        //     type: "damage",
+        //     status: "pending",
+        //     description: "Screen broken",
+        // });
+
+        console.log("All collections have been initialized.");
+    } catch (error) {
+        console.error("Error initializing database:", error);
+    } finally {
+        // Gracefully shut down the application
+        process.exit(0);
+    }
+};
+
+initializeDatabase();
+
+export default initializeDatabase;
