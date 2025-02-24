@@ -1,100 +1,78 @@
 "use client";
 
-
-
-// icons 
-import { FiRefreshCcw } from "react-icons/fi";
-
-
+import { useState } from "react";
 import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableFooter,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
-import SearchBar from "../../layouts/SearchBar";
-import { ReportsFilter } from "./ReportsFilter";
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useGetReportsQuery } from "@/app/globalRedux/features/api/apiSlice";
 
-  
- 
-  
-  export function ReportsTable() {
-  
-  const invoices = [{
-    name: "supplier.name",
-    emailAddress: "supplier.email",
-    reliability: "supplier.rating",
-    isFraud: "supplier.isFraud",
-    place: "supplier.place",
-  }];
+export function ReportsTable() {
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useGetReportsQuery({ page });
 
-    return (
-      <>
-      <div className="w-full flex justify-between" >
-        <ReportsFilter />
+  if (isLoading) return <p>Loading reports...</p>;
 
-        <div className="flex gap-5" >
-            <SearchBar />
+  return (
+    <>
+      <h1 className="font-bold text-xl">Reports Table</h1>
 
-            <button className="w-max px-6 py-1 bg-primary text-gray-100 rounded-md
-                   hover:bg-gray-100 hover:text-black border
-                    flex justify-center items-center gap-3 text-sm"
-                    >
-                Refresh Stock
-                <FiRefreshCcw />
-            </button>
-        </div>
-      </div>
-      
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Name</TableHead>
-            <TableHead>Email Address</TableHead>
-            <TableHead>Reliability Rating</TableHead>
-            <TableHead>Is Fraud</TableHead>
-            <TableHead className="text-right">Place</TableHead>
+            <TableHead>Department</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Resolved Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.name}</TableCell>
-              <TableCell>{invoice.emailAddress}</TableCell>
-              <TableCell>{invoice.reliability}</TableCell>
-              <TableCell>{invoice.isFraud}</TableCell>
-              <TableCell className="text-right">{invoice.place}</TableCell>
+          {data?.reports.map((report) => (
+            <TableRow key={report._id}>
+              <TableCell>{report.departmentId?.name || "N/A"}</TableCell>
+              <TableCell>{report.type}</TableCell>
+              <TableCell className={`font-bold
+                        ${report.status == "Resolved" ? "text-green-700" : 
+                          report.status == "Pending" && "text-yellow-700" }`}>{report.status}</TableCell>
+              <TableCell>{report.description}</TableCell>
+              <TableCell className={`${!report.resolvedDate && "text-yellow-700 font-bold"}`} >
+                {report.resolvedDate
+                  ? new Date(report.resolvedDate).toLocaleDateString()
+                  : "Pending"}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={3}>Page 1/1</TableCell>
-            
-            <TableCell className="text-right pt-3" colSpan={3}>
-                <div className="flex gap-5 justify-end items-center
-                            pt-3" >
-                    <button className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100
-                         hover:text-black hover:border rounded-md" >
-                            Previous
-                    </button>
-
-                    <button className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100
-                         hover:text-black hover:border rounded-md" >
-                            Next
-                    </button>
-                </div>
+            <TableCell colSpan={5}>
+              <div className="flex justify-between">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span>Page {page} / {data?.totalPages}</span>
+                <button
+                  disabled={page >= data?.totalPages}
+                  onClick={() => setPage((prev) => prev + 1)}
+                  className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </TableCell>
           </TableRow>
         </TableFooter>
       </Table>
     </>
-
-    )
-  }
-  
-
+  );
+}

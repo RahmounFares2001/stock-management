@@ -37,13 +37,15 @@ export async function POST(request) {
             id: user._id,
             email: user.email
         };
-
+        
+        const userRole = user.role
         //create token
         const token = await jsw.sign(tokendata, process.env.TOKEN_SECRET, {expiresIn: '1h'});
         
         const response = NextResponse.json({
             message: 'login sucess',
-            succes: true
+            succes: true,
+            userRole
         });
         response.cookies.set('token', token, {
             httpOnly: true,

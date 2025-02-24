@@ -9,18 +9,16 @@ export async function POST(request) {
   try {
     const user = await getDataFromToken(request);
     const userData = await User.findById(user.id)
-    console.log(userData)
+    
     if (userData.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const reqBody = await request.json();
-    console.log(reqBody)
 
     const { name, description, category, quantity } = reqBody;
-
     // Check if stock item already exists
     const existingItem = await StockItem.findOne({ name });
-        if (existingItem) {
+    if (existingItem) {
       return NextResponse.json({ error: "Stock item already exists" }, { status: 400 });
     }
 
@@ -64,7 +62,7 @@ export async function GET(request) {
     const types = searchParams.get('types')?.split(',') || [];
     const searchQuery = searchParams.get('q') || "";
     const page = parseInt(searchParams.get('page')) || 1;
-    const limit = 3;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
     let query = {};
@@ -99,30 +97,35 @@ export async function GET(request) {
 export async function PUT(request, { params }) {
   try {
     const user = await getDataFromToken(request);
-    if (user.role !== 'admin') {
+    const userData = await User.findById(user.id);
+
+    if (userData.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const reqBody = await request.json();
-    const { name, description, category, quantity } = reqBody;
-    const itemId = params.id;
+    const { itemId, description, quantity } = reqBody;
+
+    const updateFields = {};
+    if (description !== undefined && description !== "") {
+      updateFields.description = description;
+    }
+    if (quantity !== undefined && quantity !== "") {
+      updateFields.quantity = quantity;
+      updateFields.status =
+        quantity === 0 ? "Out Of Stock" : quantity < 5 ? "Low Stock" : "Available";
+    }
 
     const updatedItem = await StockItem.findByIdAndUpdate(
       itemId,
-      {
-        name,
-        description,
-        category,
-        quantity,
-        status: quantity === 0 ? 'out_of_stock' : quantity < 5 ? 'low_stock' : 'available'
-      },
+      updateFields,
       { new: true }
     );
 
     return NextResponse.json({
       message: "Stock item updated successfully",
       success: true,
-      item: updatedItem
+      item: updatedItem,
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -135,7 +138,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const user = await getDataFromToken(request);
-    if (user.role !== 'admin') {
+    const userData = await User.findById(user.id);
+
+    if (userData.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

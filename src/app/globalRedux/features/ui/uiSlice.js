@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     dropProfileMenu: false,
+    showProvideForm: false,
+    providedRow: "",
 };
 
 export const uiSlice = createSlice({

@@ -39,7 +39,7 @@ import { DepartmentFilter } from "./DepartmentFilter";
         <DepartmentFilter />
 
         <div className="flex gap-5" >
-            <SearchBar />
+            {/* <SearchBar /> */}
 
             <button className="w-max px-6 py-1 bg-primary text-gray-100 rounded-md
                    hover:bg-gray-100 hover:text-black border

@@ -1,100 +1,113 @@
 "use client";
 
-
-
-// icons 
 import { FiRefreshCcw } from "react-icons/fi";
-
-
 import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableFooter,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
-import SearchBar from "../../layouts/SearchBar";
-import { DepartmentsFilter } from "./DepartmentsFilter";
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useState } from "react";
+import { useGetDepartmentsQuery } from "@/app/globalRedux/features/api/apiSlice";
 
-  
- 
-  
-  export function DepartmentsTable() {
-  
-  const invoices = [{
-    name: "supplier.name",
-    emailAddress: "supplier.email",
-    reliability: "supplier.rating",
-    isFraud: "supplier.isFraud",
-    place: "supplier.place",
-  }];
+// Pagination Component
+const Pagination = ({ totalPages, currentPage, onPageChange }) => {
+  const maxPagesToShow = 5;
+  const startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    return (
-      <>
-      <div className="w-full flex justify-between" >
-        <DepartmentsFilter />
+  return (
+    <div className="flex gap-2 justify-center items-center pt-3">
+      <button
+        className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100 hover:text-black hover:border rounded-md"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </button>
 
-        <div className="flex gap-5" >
-            <SearchBar />
+      {Array.from({ length: endPage - startPage + 1 }, (_, index) => {
+        const page = startPage + index;
+        return (
+          <button
+            key={page}
+            className={`w-8 h-8 border rounded-md ${
+              page === currentPage ? "bg-primary text-gray-100" : "hover:bg-gray-100 hover:text-black"
+            }`}
+            onClick={() => onPageChange(page)}
+          >
+            {page}
+          </button>
+        );
+      })}
 
-            <button className="w-max px-6 py-1 bg-primary text-gray-100 rounded-md
-                   hover:bg-gray-100 hover:text-black border
-                    flex justify-center items-center gap-3 text-sm"
-                    >
-                Refresh Stock
-                <FiRefreshCcw />
-            </button>
-        </div>
+      <button
+        className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100 hover:text-black hover:border rounded-md"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </div>
+  );
+};
+
+export function DepartmentsTable() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, error, isLoading, refetch } = useGetDepartmentsQuery({ page: currentPage, limit: 5, q: "" });
+
+  return (
+    <>
+      <div className="w-full flex justify-between">
+        <button
+          className="w-max px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-gray-100 hover:text-black border flex justify-center items-center gap-3 text-sm"
+          onClick={() => refetch()}
+        >
+          Refresh Departments
+          <FiRefreshCcw />
+        </button>
       </div>
-      
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Name</TableHead>
-            <TableHead>Email Address</TableHead>
-            <TableHead>Reliability Rating</TableHead>
-            <TableHead>Is Fraud</TableHead>
-            <TableHead className="text-right">Place</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.name}</TableCell>
-              <TableCell>{invoice.emailAddress}</TableCell>
-              <TableCell>{invoice.reliability}</TableCell>
-              <TableCell>{invoice.isFraud}</TableCell>
-              <TableCell className="text-right">{invoice.place}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3}>Page 1/1</TableCell>
-            
-            <TableCell className="text-right pt-3" colSpan={3}>
-                <div className="flex gap-5 justify-end items-center
-                            pt-3" >
-                    <button className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100
-                         hover:text-black hover:border rounded-md" >
-                            Previous
-                    </button>
 
-                    <button className="w-24 py-1 border bg-primary text-gray-200 hover:bg-gray-100
-                         hover:text-black hover:border rounded-md" >
-                            Next
-                    </button>
-                </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      {isLoading ? (
+        <p className="text-center mt-5">Loading departments...</p>
+      ) : error ? (
+        <p className="text-center mt-5 text-red-500">Error fetching departments</p>
+      ) : (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email Address</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.departments.length > 0 ? (
+                data.departments.map((dept) => (
+                  <TableRow key={dept._id}>
+                    <TableCell className="font-medium">{dept.name}</TableCell>
+                    <TableCell>{dept.email || "No email provided"}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center">
+                    No departments found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <Pagination
+            totalPages={data.totalPages}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      )}
     </>
-
-    )
-  }
-  
-
+  );
+}

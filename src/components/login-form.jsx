@@ -37,7 +37,15 @@ export function LoginForm({ className, ...props }) {
     onSubmit: async (values) => {
       try {
         const response = await loginUser(values).unwrap();
-        router.push("/adminDashboard");
+        const userRole = response.userRole
+        if(userRole == "admin") {
+          router.push("/adminDashboard");
+        } else if (userRole == "supervisor") {
+          router.push("/supervisorDashboard");
+        } else if (userRole == "department") {
+          router.push("/departmentDashboard");
+        }
+
         console.log("Login successful", response);
       } catch (err) {
         setServerError(err?.data?.error || "Login failed");

@@ -1,7 +1,6 @@
+
 import React from 'react'
 
-
-import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,16 +17,26 @@ import {
 } from "@/components/ui/sidebar"
 
 
+// components
+import AddInventoryForm from '../components/adminDashboard/stock/AddInventoryForm';
+import { AppSidebarSupervisor } from '@/components/app-sidebar supervisor';
+
 
 
 
 export default function dasboardLayout({children}) {
+
+
   return (
     (<SidebarProvider>
-        <AppSidebar />
+
+        <AppSidebarSupervisor />
         <SidebarInset>
             {children}
         </SidebarInset>
+
+
+        
       </SidebarProvider>)
   )
 }

@@ -53,8 +53,8 @@ const stockItemSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['available', 'Low Stock', 'Out Of Stock'],
-    default: 'available'
+    enum: ['Available', 'Low Stock', 'Out Of Stock'],
+    default: 'Available'
   }
 }, { timestamps: true });
 
@@ -80,8 +80,8 @@ const departmentInventorySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'returned', 'damaged'],
-    default: 'active'
+    enum: ['Active', 'Returned', 'Damaged'],
+    default: 'Active'
   }
 }, { timestamps: true });
 
@@ -99,13 +99,13 @@ const reportSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['damage', 'maintenance'],
+    enum: ['Damage', 'Maintenance'],
     required: true
   },
   status: {
     type: String,
-    enum: ['pending','resolved'],
-    default: 'pending'
+    enum: ['Pending','Resolved'],
+    default: 'Pending'
   },
   description: {
     type: String,
