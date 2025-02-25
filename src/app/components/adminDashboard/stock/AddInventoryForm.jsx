@@ -2,17 +2,27 @@
 
 import { useAddDepartmentInventoryMutation } from "@/app/globalRedux/features/api/apiSlice";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { DepartmentDropMenu } from "./DepartmentDropMenu";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import BonDeSortie from "../bonDeSortie/BonDeSortie";
+import { setUi } from "@/app/globalRedux/features/ui/uiSlice";
 
 export default function AddInventoryForm() {
   // redux
+  const dispatch = useDispatch();
   const providedRow = useSelector((state)=> state.ui.providedRow);
 
   // 
   const [assignInventory, { isLoading, error }] = useAddDepartmentInventoryMutation();
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+
+  // ref to bon de sortie
+  const bonDeSortieRef = useRef(null);
+
+  const bonDeSortieData = useSelector((state) => state.ui.BonDeSortieData);
+  const departmentName = bonDeSortieData[0].departmentName
+  const itemName = bonDeSortieData[0].itemName
 
   // Formik setup
   const formik = useFormik({
@@ -24,13 +34,39 @@ export default function AddInventoryForm() {
     onSubmit: async (values, { resetForm }) => {
       try {
         const q = parseInt(values.quantity)
+
+        const departmentIdStr = values.departmentId.toString().padEnd(8, "0").slice(0, 8);
+        const itemIdStr = providedRow.toString().padEnd(8, "0").slice(0, 8);
+        const code = departmentIdStr + itemIdStr;
+        
+        await dispatch(
+          setUi({
+            key: "BonDeSortieData",
+            value: [
+              { 
+                departmentName: departmentName,
+                itemName: itemName,
+                code: code,
+                quantity: q,
+               },
+            ],
+          })
+        );
+        
+
         await assignInventory({
           departmentId: values.departmentId,
           itemId: providedRow,
+          code: code,
           quantity: parseInt(values.quantity),
         }).unwrap();
-     
 
+        // print "Bon De Sortie"
+        if (bonDeSortieRef.current) {
+          bonDeSortieRef.current.downloadPdf();
+        }
+        
+        dispatch(setUi({key: "showProvideForm", value: false}));
         alert("Inventory Assigned Successfully");
         resetForm();
         setSelectedDepartment(null); // Reset selected department
@@ -90,6 +126,7 @@ export default function AddInventoryForm() {
       </form>
     </div>
 
+    <BonDeSortie ref={bonDeSortieRef} />
 
     </>
   );

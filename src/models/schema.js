@@ -70,6 +70,10 @@ const departmentInventorySchema = new mongoose.Schema({
     ref: "stockItems",
     required: true
   },
+  code: {
+    type: String,
+    required: true
+  },
   quantity: {
     type: Number,
     required: true
@@ -106,6 +110,10 @@ const reportSchema = new mongoose.Schema({
     type: String,
     enum: ['Pending','Resolved'],
     default: 'Pending'
+  },
+  reportedQuantity: {
+    type: Number,
+    required: true
   },
   description: {
     type: String,

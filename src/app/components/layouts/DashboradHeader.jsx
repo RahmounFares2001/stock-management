@@ -37,7 +37,7 @@ export default function DashboradHeader({currentPage}) {
 
 
   // logout
-  const [logoutUser, { isLoading }] = useLogoutUserMutation(); // ✅ Correct usage
+  const [logoutUser, { isLoading }] = useLogoutUserMutation(); 
 
   const handleLogout = async () => {
     try {
@@ -83,7 +83,7 @@ export default function DashboradHeader({currentPage}) {
             {dropProfileMenu && 
             <div className='absolute top-14 right-3 h-max w-28 bg-white
                   flex flex-col border shadow-lg shadow-gray-400 rounded-xl' >
-              <h1 className='text-black text-center py-2' >Admin</h1>
+              <h1 className='text-black text-center py-2' >User</h1>
               <hr />
 
               <button className='flex gap-2 px-3 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200'

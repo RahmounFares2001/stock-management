@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ import { MdPersonAddAlt1 } from "react-icons/md";
 import { MdReportGmailerrorred } from "react-icons/md";
 import { MdOutlineSecurity } from "react-icons/md";
 import { IoLogOutOutline } from "react-icons/io5";
+import { useLogoutUserMutation } from "@/app/globalRedux/features/api/apiSlice";
 
 
 
@@ -114,6 +115,21 @@ const data = {
 export function AppSidebar({ ...props }) {
   const pathname = usePathname(); // Get current page URL
 
+
+    // logout
+    const router = useRouter();
+    
+    const [logoutUser, { isLoading }] = useLogoutUserMutation(); 
+
+    const handleLogout = async () => {
+      try {
+        await logoutUser().unwrap(); 
+        router.push("/")
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("Logout failed. Please try again.");
+      }
+    };
   return (
     <Sidebar {...props} >
       <SidebarHeader >
@@ -139,6 +155,20 @@ export function AppSidebar({ ...props }) {
                 {item.items.map((subItem) => {
                   const isActive = pathname === subItem.url; // Check if current page is active
                   return (
+                    (subItem.title == "Logout" ? 
+                      <button key={subItem.id}
+                              onClick={()=> {handleLogout()}} >
+                      <SidebarMenuItem key={subItem.title}
+                            className="flex gap-2 items-center" >                        
+                        <SidebarMenuButton asChild isActive={isActive}>
+                          <div className="flex gap-2 items-center cursor-pointer" >
+                            {subItem.icon}
+                            {subItem.title}
+                          </div>
+
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </button> :
                     <a href={subItem.url} key={subItem.id} >
                       <SidebarMenuItem key={subItem.title}
                             className="flex gap-2 items-center" >                        
@@ -150,7 +180,7 @@ export function AppSidebar({ ...props }) {
 
                         </SidebarMenuButton>
                       </SidebarMenuItem>
-                    </a>
+                    </a> )
                   );
                 })}
               </SidebarMenu>

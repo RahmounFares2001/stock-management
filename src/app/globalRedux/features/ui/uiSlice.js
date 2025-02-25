@@ -4,6 +4,13 @@ const initialState = {
     dropProfileMenu: false,
     showProvideForm: false,
     providedRow: "",
+    BonDeSortieData: [{
+        departmentName: "",
+        itemName: "",
+        itemQuantity: 0,
+        code: ""
+    }],
+    showReportForm: false,
 };
 
 export const uiSlice = createSlice({

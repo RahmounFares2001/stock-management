@@ -134,6 +134,12 @@ export function StockTable() {
 
 
 
+  // get data bon de sortie
+  const bonDeSortieData = useSelector((state) => state.ui.BonDeSortieData);
+  const departmentName = bonDeSortieData[0].departmentName
+  const itemName = bonDeSortieData[0].itemName
+  const q = bonDeSortieData[0].quantity
+  const code = bonDeSortieData[0].code
 
   return (
     <>
@@ -233,6 +239,18 @@ export function StockTable() {
                             onClick={()=> {
                               dispatch(setUi({key: "providedRow", value: item._id}));
                               dispatch(setUi({key: "showProvideForm", value: true}));
+                              dispatch(
+                                setUi({
+                                  key: "BonDeSortieData",
+                                  value: [
+                                    { 
+                                      itemName: item.name,
+                                      departmentName: departmentName,
+                                      code: code,
+                                      quantity: q,
+                                     },
+                                  ],
+                                }))
                             }} >
                                 Provide
                       </button> 

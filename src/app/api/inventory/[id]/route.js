@@ -1,18 +1,29 @@
 import { getDataFromToken } from "@/app/helpers/getDateFromToken";
-import { DepartmentInventory } from "@/models/schema";
+import { DepartmentInventory, StockItem, User } from "@/models/schema";
 import { NextResponse } from "next/server";
 
 // Get Specific Inventory by ID
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
-    const inventory = await DepartmentInventory.findById(id).populate("departmentId").populate("itemId");
+    const user = await getDataFromToken(request);
+    const userData = await User.findById(user.id);
 
-    if (!inventory) {
-      return NextResponse.json({ error: "Inventory not found" }, { status: 404 });
+    const departmentId = userData.department.toString();
+
+    const departmentInventories = await DepartmentInventory.find({
+      departmentId: departmentId
+    })
+
+    const itemIds = departmentInventories.map((inventory) => inventory.itemId);
+
+    if (itemIds.length === 0) {
+      return NextResponse.json({ message: "No stock items found", stockItems: [] });
     }
 
-    return NextResponse.json({ inventory, success: true });
+    // Find stock items in the inventory
+    const stockItems = await StockItem.find({ _id: { $in: itemIds } });
+    
+    return NextResponse.json({ stockItems });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

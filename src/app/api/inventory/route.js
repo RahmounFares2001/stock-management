@@ -1,5 +1,5 @@
 import { getDataFromToken } from "@/app/helpers/getDateFromToken";
-import {  DepartmentInventory, StockItem, User } from "@/models/schema";
+import {  DepartmentInventory, Report, StockItem, User } from "@/models/schema";
 import { NextResponse } from "next/server";
 
 // Create (Assign Inventory to Department)
@@ -12,24 +12,40 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { departmentId, itemId, quantity } = await request.json();
+    const { departmentId, itemId, code, quantity } = await request.json();
 
-    // Check stock availability
     const stockItem = await StockItem.findById(itemId);
     if (!stockItem || stockItem.quantity < quantity) {
       return NextResponse.json({ error: "Insufficient stock" }, { status: 400 });
     }
 
-    // Create new department inventory
-    const newInventory = new DepartmentInventory({ departmentId, itemId, quantity });
-    console.log(newInventory)
+    const newInventory = new DepartmentInventory({ departmentId, itemId, code, quantity });
 
-    // Update stock quantity
     stockItem.quantity -= quantity;
     stockItem.status = 
       stockItem.quantity === 0 ? 'Out Of Stock' : 
       stockItem.quantity < 5 ? 'Low Stock' : 
       'Available';
+
+    const pendingReports = await Report.find({
+      departmentId,
+      itemId,
+      status: 'Pending',
+    });
+
+    console.log(pendingReports)
+    let resolvedReportsCount = 0;
+
+    for (const report of pendingReports) {
+      if (report.reportedQuantity <= quantity) {
+        report.status = 'Resolved';
+        report.resolvedDate = new Date();
+        resolvedReportsCount++;
+      } else {
+        report.reportedQuantity -= quantity;
+      }
+      await report.save();
+    }
 
     await Promise.all([newInventory.save(), stockItem.save()]);
 
@@ -37,7 +53,9 @@ export async function POST(request) {
       message: "Items assigned successfully",
       success: true,
       inventory: newInventory,
+      resolvedReports: resolvedReportsCount,
     });
+
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

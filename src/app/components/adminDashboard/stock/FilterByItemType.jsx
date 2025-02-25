@@ -22,12 +22,12 @@ export function FilterByItemType({ selectedType, onTypeChange }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="bg-primary text-gray-100">
-          {selectedType ? selectedType : "Filter By Type"}
+          {selectedType ? selectedType : "Filter By Status"}
           <CiFilter className="ml-2" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-primary text-gray-200">
-        <DropdownMenuLabel>Item Types</DropdownMenuLabel>
+        <DropdownMenuLabel>Item Status</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={selectedType} onValueChange={onTypeChange}>
           {itemTypes.map((type) => (

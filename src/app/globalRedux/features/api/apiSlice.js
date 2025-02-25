@@ -83,9 +83,8 @@ export const apiSlice = createApi({
         currentPage: response.currentPage,
       }),
     }),
-    getStockItemById: builder.query({
-      query: (id) => `/stock/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Stock', id }],
+    getStockItem: builder.query({
+      query: (id) => `/inventory/[id]/`,
     }),
     addStockItem: builder.mutation({
       query: (stockData) => ({
@@ -112,14 +111,11 @@ export const apiSlice = createApi({
     }),
 
     // Reports API
+    getAllReports: builder.query({
+      query: () => "/reports/",
+    }),
     getReports: builder.query({
-      query: ({ page = 1, limit = 5 }) => `/reports?page=${page}&limit=${limit}`,
-      transformResponse: (response) => ({
-        reports: response.reports,
-        totalPages: response.totalPages,
-        totalItems: response.totalItems,
-        currentPage: response.currentPage,
-      }),
+      query: () => "/reports/[id]/",
     }),
     getReportById: builder.query({
       query: (id) => `/reports/${id}`,
@@ -127,7 +123,7 @@ export const apiSlice = createApi({
     }),
     createReport: builder.mutation({
       query: (reportData) => ({
-        url: '/reports',
+        url: '/reports/[id]/',
         method: 'POST',
         body: reportData,
       }),
@@ -186,6 +182,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'DepartmentInventory', id }],
     }),
+    
   }),
 });
 
@@ -198,10 +195,11 @@ export const {
   useLogoutUserMutation,
   useUpdatePasswordMutation,
   useGetStockItemsQuery,
-  useGetStockItemByIdQuery,
+  useGetStockItemQuery,
   useAddStockItemMutation,
   useUpdateStockItemMutation,
   useDeleteStockItemMutation,
+  useGetAllReportsQuery,
   useGetReportsQuery,
   useGetReportByIdQuery,
   useCreateReportMutation,
