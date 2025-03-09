@@ -18,6 +18,7 @@ import { Suspense, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUi } from "@/app/globalRedux/features/ui/uiSlice";
 import AddInventoryForm from "./AddInventoryForm";
+import { useSearchParams } from "next/navigation";
 
 // Pagination Component
 const Pagination = ({ totalPages, currentPage, onPageChange }) => {
@@ -71,15 +72,15 @@ export function StockTable() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // get search params
-  // const searchParams = useSearchParams();
-  // const searchTerm = searchParams.get('q') || '';
+  const searchParams = useSearchParams  ();
+  const searchTerm = searchParams.get('q') || '';
   
   // get data
   const { data: stockItems, error, isLoading, refetch } = useGetStockItemsQuery({
     categories: selectedCategory ? [selectedCategory] : [],
     types: selectedType ? [selectedType] : [],
     page: currentPage,
-    q: ""
+    q: searchTerm
   });
 
   const handleCategoryChange = (category) => {
@@ -149,9 +150,7 @@ export function StockTable() {
           <FilterByItemType selectedType={selectedType} onTypeChange={handleTypeChange} />
         </div>
         <div className="flex gap-5">
-          {/* <Suspense fallback={<div>Loading search...</div>}>
             <SearchBar />
-          </Suspense> */}
           <button
             className="w-max px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-gray-100 hover:text-black border flex justify-center items-center gap-3 text-sm"
             onClick={() => refetch()}

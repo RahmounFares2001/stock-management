@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useSelector } from "react-redux";
@@ -9,49 +9,55 @@ const BonDeSortie = forwardRef((props, ref) => {
   const printRef = useRef(null);
 
   const handleDownloadPdf = async () => {
-    const element = printRef.current;
-    if (!element) {
-      return;
+    try {
+      const element = printRef.current;
+      if (!element) {
+        console.error("Element to print is missing.");
+        return;
+      }
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+      });
+      const data = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: "a4",
+      });
+
+      const imgProperties = pdf.getImageProperties(data);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+      pdf.addImage(data, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("Bon_De_Sortie.pdf");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
     }
-
-    const canvas = await html2canvas(element, {
-      scale: 2,
-    });
-    const data = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
-
-    const imgProperties = pdf.getImageProperties(data);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
-
-    pdf.addImage(data, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("Bon_De_Sortie.pdf");
   };
 
-  // Expose the handleDownloadPdf function to the parent component
   useImperativeHandle(ref, () => ({
     downloadPdf: handleDownloadPdf,
   }));
 
-  // get data
-  const bonDeSortieData = useSelector((state) => state.ui.BonDeSortieData);
-  const departmentName = bonDeSortieData[0].departmentName
-  const itemName = bonDeSortieData[0].itemName
-  console.log("itemName");
-  console.log(itemName);
-  const quantity = bonDeSortieData[0].quantity
-  const code = bonDeSortieData[0].code
+  // Get data from Redux store
+  const bonDeSortieData = useSelector((state) => state.ui.BonDeSortieData) || [];
 
+  const departmentName = bonDeSortieData[0]?.departmentName || "N/A";
+  const itemName = bonDeSortieData[0]?.itemName || "N/A";
+  const quantity = bonDeSortieData[0]?.quantity || 0;
+  const code = bonDeSortieData[0]?.code || "N/A";
 
   return (
     <div className="h-dvh bg-gray-100 p-8 flex flex-col items-center absolute -z-50 opacity-0">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
-        <div ref={printRef} className="p-8 bg-white border border-gray-200">
+        <div
+          ref={printRef}
+          className="p-8 bg-white border border-gray-200"
+          aria-label="Bon De Sortie Document"
+        >
           <div className="flex justify-between items-center mb-8">
             <div className="flex flex-col gap-3">
               <h1 className="text-xl font-bold text-gray-800">Bon De Sortie</h1>
@@ -71,7 +77,7 @@ const BonDeSortie = forwardRef((props, ref) => {
             <div className="flex flex-col">
               <h3 className="font-semibold mb-4 text-sm">Transférer à:</h3>
               <p className="text-gray-700 text-xs">
-                {departmentName} 
+                {departmentName}
                 <br />
                 Algerie Telecom
               </p>
@@ -82,7 +88,7 @@ const BonDeSortie = forwardRef((props, ref) => {
               <p className="text-gray-700 text-xs">
                 DATE:
                 <br />
-                BON N': 035/2025
+                BON N&apos;: 035/2025
               </p>
             </div>
           </div>
@@ -117,4 +123,5 @@ const BonDeSortie = forwardRef((props, ref) => {
   );
 });
 
+BonDeSortie.displayName = "BonDeSortie";
 export default BonDeSortie;
